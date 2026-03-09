@@ -1,0 +1,9 @@
+{
+  "name": "cc-search-plugin",
+  "version": "1.0.0",
+  "description": "Search past Claude Code sessions and auto-inject context after compaction",
+  "author": { "name": "nogataka" },
+  "repository": "https://github.com/nogataka/cc-search-plugin",
+  "license": "MIT",
+  "keywords": ["search", "history", "context", "compact"]
+}

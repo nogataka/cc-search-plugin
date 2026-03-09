@@ -1,0 +1,20 @@
+{
+  "name": "cc-search-plugin",
+  "version": "1.0.0",
+  "description": "Search past Claude Code sessions and auto-inject context after compaction",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "cc-search": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "author": "nogataka",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

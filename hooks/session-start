@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Read stdin (hook input JSON) and pass to inject-context CLI
+INPUT=$(cat)
+
+CONTEXT=$(echo "$INPUT" | node "${PLUGIN_ROOT}/dist/cli.js" inject-context 2>/dev/null || true)
+
+if [ -z "$CONTEXT" ]; then
+  exit 0
+fi
+
+# Escape for JSON embedding
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+CONTEXT_ESCAPED=$(escape_for_json "$CONTEXT")
+
+cat <<EOF
+{
+  "additional_context": "${CONTEXT_ESCAPED}"
+}
+EOF
