@@ -1,6 +1,6 @@
 {
   "name": "cc-search-plugin",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Search past Claude Code sessions and auto-inject context after compaction",
   "type": "module",
   "main": "dist/cli.js",

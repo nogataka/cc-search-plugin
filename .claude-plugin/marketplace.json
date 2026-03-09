@@ -1,0 +1,18 @@
+{
+  "name": "cc-search-marketplace",
+  "owner": {
+    "name": "nogataka"
+  },
+  "metadata": {
+    "description": "CC Search: search past Claude Code sessions and auto-inject context",
+    "version": "0.0.1"
+  },
+  "plugins": [
+    {
+      "name": "cc-search-plugin",
+      "source": "./",
+      "description": "Search past Claude Code sessions and auto-inject context after compaction",
+      "version": "0.0.1"
+    }
+  ]
+}

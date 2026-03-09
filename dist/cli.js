@@ -8,11 +8,12 @@
  *   session-detail <projectId> <sessionId>
  *   inject-context [--count N]
  */
-import { searchClaudeCode, getSearchProjects, getSessionDetail, } from "./search.js";
+import { searchClaudeCode, getSearchProjects, getSessionDetail, getRecentSessions, } from "./search.js";
 import { injectContext } from "./context-injector.js";
 function printUsage() {
     console.error(`Usage:
   cc-search search <query> [--limit N] [--project <filter>]
+  cc-search recent [--sessions N] [--messages N] [--project <filter>]
   cc-search list-projects
   cc-search session-detail <projectId> <sessionId>
   cc-search inject-context [--count N]`);
@@ -44,6 +45,15 @@ async function main() {
             const project = parseFlag(args, "--project");
             const result = await searchClaudeCode(query, limit, project);
             console.log(JSON.stringify(result, null, 2));
+            break;
+        }
+        case "recent": {
+            const sessions = parseInt(parseFlag(args, "--sessions") ?? "1", 10);
+            const messages = parseInt(parseFlag(args, "--messages") ?? "20", 10);
+            const offset = parseInt(parseFlag(args, "--offset") ?? "0", 10);
+            const project = parseFlag(args, "--project");
+            const recent = await getRecentSessions(sessions, messages, project, offset);
+            console.log(JSON.stringify(recent, null, 2));
             break;
         }
         case "list-projects": {

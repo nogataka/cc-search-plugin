@@ -322,3 +322,101 @@ export async function getSessionDetail(
 
   return messages;
 }
+
+// ---------------------------------------------------------------------------
+// Recent sessions
+// ---------------------------------------------------------------------------
+
+export interface RecentSession {
+  projectId: string;
+  projectName: string;
+  projectPath: string;
+  sessionId: string;
+  lastTimestamp: string;
+  messageCount: number;
+  messages: SessionMessage[];
+}
+
+/**
+ * Get recent sessions sorted by last activity.
+ * If projectFilter is provided, only returns sessions from that project.
+ * Returns the last `messageLimit` messages from each session.
+ */
+export async function getRecentSessions(
+  sessionLimit: number = 1,
+  messageLimit: number = 20,
+  projectFilter?: string,
+  offset: number = 0,
+): Promise<RecentSession[]> {
+  const sessions: RecentSession[] = [];
+
+  try {
+    const projectDirs = await readdir(CLAUDE_PROJECTS_DIR);
+
+    for (const dirName of projectDirs) {
+      if (projectFilter && dirName !== projectFilter) continue;
+
+      const projectDirPath = resolve(CLAUDE_PROJECTS_DIR, dirName);
+      const dirStat = await stat(projectDirPath).catch(() => null);
+      if (!dirStat?.isDirectory()) continue;
+
+      const files = await readdir(projectDirPath).catch(() => []);
+      const sessionFiles = files.filter((f) => UUID_JSONL_RE.test(f));
+
+      for (const sessionFile of sessionFiles) {
+        const sessionPath = resolve(projectDirPath, sessionFile);
+        const sessionId = sessionFile.replace(".jsonl", "");
+        const fileStat = await stat(sessionPath).catch(() => null);
+        if (!fileStat || fileStat.size > MAX_FILE_SIZE) continue;
+
+        try {
+          const content = await readFile(sessionPath, "utf-8");
+          const lines = content.trim().split("\n");
+          const messages: SessionMessage[] = [];
+
+          for (const line of lines) {
+            const entry = extractTextFromLine(line);
+            if (entry && entry.role) {
+              messages.push({
+                role: entry.role,
+                text: entry.text,
+                timestamp: entry.timestamp,
+              });
+            }
+          }
+
+          if (messages.length === 0) continue;
+
+          const projectPath = await resolveProjectPath(projectDirPath);
+          const lastTimestamp =
+            messages[messages.length - 1]?.timestamp || "";
+
+          sessions.push({
+            projectId: dirName,
+            projectName: projectDisplayName(projectPath),
+            projectPath,
+            sessionId,
+            lastTimestamp,
+            messageCount: messages.length,
+            messages: messages.slice(-messageLimit),
+          });
+        } catch {
+          // skip
+        }
+      }
+    }
+  } catch {
+    // directory doesn't exist
+  }
+
+  sessions.sort((a, b) => {
+    if (!a.lastTimestamp) return 1;
+    if (!b.lastTimestamp) return -1;
+    return (
+      new Date(b.lastTimestamp).getTime() -
+      new Date(a.lastTimestamp).getTime()
+    );
+  });
+
+  return sessions.slice(offset, offset + sessionLimit);
+}

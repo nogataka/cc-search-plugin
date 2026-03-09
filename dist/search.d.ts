@@ -37,3 +37,18 @@ export declare function searchClaudeCode(query: string, limit: number, projectFi
 }>;
 export declare function getSearchProjects(): Promise<SearchProject[]>;
 export declare function getSessionDetail(projectId: string, sessionId: string): Promise<SessionMessage[]>;
+export interface RecentSession {
+    projectId: string;
+    projectName: string;
+    projectPath: string;
+    sessionId: string;
+    lastTimestamp: string;
+    messageCount: number;
+    messages: SessionMessage[];
+}
+/**
+ * Get recent sessions sorted by last activity.
+ * If projectFilter is provided, only returns sessions from that project.
+ * Returns the last `messageLimit` messages from each session.
+ */
+export declare function getRecentSessions(sessionLimit?: number, messageLimit?: number, projectFilter?: string, offset?: number): Promise<RecentSession[]>;
